@@ -7,6 +7,7 @@
 // Lora TTN via LMIC and bmp280 code
 // https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
 
+
 #define LPP_DIGITAL_INPUT       0       // 1 byte
 #define LPP_DIGITAL_OUTPUT      1       // 1 byte
 #define LPP_ANALOG_INPUT        2       // 2 bytes, 0.01 signed
@@ -58,14 +59,14 @@ bool sleeping = false;
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-static const u1_t DEVEUI[8] = {};
-static const u1_t APPEUI[8] = {};
+static const u1_t DEVEUI[8] = { };
+static const u1_t APPEUI[8] = { };
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
 // The key shown here is the semtech default key.
-static const u1_t APPKEY[16] = {};
+static const u1_t APPKEY[16] = { };
 
 void os_getArtEui (u1_t* buf) {
   memcpy(buf, APPEUI, 8);
@@ -182,13 +183,18 @@ void onEvent (ev_t ev) {
 
 void do_send(osjob_t* j) {
   float temperature,pascal;
+  float hum = 0.0;
+  uint8_t cursor = 0;
+  int16_t help;
   uint16_t t_value, p_value, s_value;
+  byte buffer[20];
 
   //Read sensor vallues from BMP Board
   bmp280.awaitMeasurement();
   bmp280.getTemperature(temperature);
   bmp280.getPressure(pascal);
   bmp280.triggerMeasurement();
+  
   //Print vallue from the sensor BMP Board
   pascal=pascal/100;
   Serial.print(" Pressure: ");
@@ -197,15 +203,7 @@ void do_send(osjob_t* j) {
   Serial.print(temperature);
   Serial.println(" C");
 
-
-  float hum(NAN);
-  uint8_t pressureUnit(1); // B001 = hPa
-  uint8_t cursor = 0;
-  int16_t help;
-  byte buffer[20];
-  // bme.ReadData(pascal, temperature, hum, metric, pressureUnit);                
-  // Parameters: (float pressure, float temp, float humidity, bool hPa = true, bool celsius = false)
-  
+  //create Cayenne LPP payload message
   buffer[cursor++] = 0x03;
   buffer[cursor++] = LPP_TEMPERATURE;
   //help = temp * 10;
@@ -229,9 +227,13 @@ void do_send(osjob_t* j) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } else {
     // Prepare upstream data transmission at the next possible time.
-    LMIC_setTxData2(1, (uint8_t*) buffer, 2 , 0);
-    Serial.println(F("Sending: "));
-    
+   // LMIC_setTxData2(1, (uint8_t*) buffer, 2 , 0);
+   LMIC_setTxData2(1, buffer, 2 , 0);
+   Serial.println(F("Sending: "));
+   for(byte b=0; b<20; b++){
+     Serial.print(buffer[b]);
+   }
+   Serial.println(" Done, on to the next measurement");
   }
 }//do_send()
 
