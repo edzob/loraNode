@@ -224,7 +224,6 @@ void do_send(osjob_t* j) {
   uint8_t cursor = 0;
   int16_t help;
   uint16_t t_value, p_value, s_value;
-  byte buffer[20];
 
   //Read sensor vallues from BMP Board
   bmp280.awaitMeasurement();
@@ -239,36 +238,64 @@ void do_send(osjob_t* j) {
   Serial.print(" Pa; T: ");
   Serial.print(temperature);
   Serial.println(" C");
+  
+  // Example data
+  // 03 67 01 10 05 67 00 FF
 
+  // 03 Data Channel
+  // 67 type = Temperature
+  // 01 10 => 272 => 27.2°C (hex value)
+  // 67 hex = 110 dec
+  
+  // 03 67 01 10 
+  // 05 67 00 FF
+  // #define LPP_TEMPERATURE         103     // 2 bytes, 0.1°C signed
+
+  // the buffer is a collection of decimals, 
+  // where the LPP is written in hex values.
+  
+   byte buffer[8];
+   buffer[cursor++] = 0x03;  // data channel
+   buffer[cursor++] = 0x67; // LPP_TEMPERATURE; // 103 lpp = 0x67 hex
+   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+   buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
+  
+   buffer[cursor++] = 0x05; // data channel
+   buffer[cursor++] = 0x67; // LPP_TEMPERATURE;  // 103 lpp = 0x67 hex
+   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+   buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+
+    
   //create Cayenne LPP payload message
+  /*
+  help = temperature * 10;
   buffer[cursor++] = 0x03;
   buffer[cursor++] = LPP_TEMPERATURE;
-  //help = temp * 10;
-  help = temperature;
   buffer[cursor++] = help >> 8;
   buffer[cursor++] = help;
   
-  buffer[cursor++] = 0x04;
-  buffer[cursor++] = LPP_RELATIVE_HUMIDITY;
-  buffer[cursor++] = hum; 
+  // buffer[cursor++] = 0x04;
+  // buffer[cursor++] = LPP_RELATIVE_HUMIDITY;
+  // buffer[cursor++] = hum; 
   
+  help = pascal * 10;
   buffer[cursor++] = 0x05;
   buffer[cursor++] = LPP_BAROMETRIC_PRESSURE;
-  //help = pres * 10;
-  help = pascal;
   buffer[cursor++] = help >> 8;
   buffer[cursor++] = help;
+  */
   
   // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } else {
     // Prepare upstream data transmission at the next possible time.
-   // LMIC_setTxData2(1, (uint8_t*) buffer, 2 , 0);
-   LMIC_setTxData2(1, buffer, 2 , 0);
-   Serial.println(F("Sending: "));
-   for(byte b=0; b<20; b++){
-     Serial.print(buffer[b]);
+    LMIC_setTxData2(1, buffer, sizeof(buffer)/sizeof(buffer[0]), 0);
+    
+    //Serial output of message
+    Serial.println(F("Sending: "));
+    for(byte b=0; b<(sizeof(buffer)/sizeof(buffer[0])); b++){
+      Serial.print(buffer[b]);
    }
    Serial.println(" Done, on to the next measurement");
   }
