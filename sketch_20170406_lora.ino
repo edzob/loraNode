@@ -102,6 +102,7 @@ static const u1_t APPEUI[8] = { };
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
 // The key shown here is the semtech default key.
+// MSB view
 static const u1_t APPKEY[16] = { };
 
 void os_getArtEui (u1_t* buf) {
