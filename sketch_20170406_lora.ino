@@ -6,6 +6,8 @@
 
 // Lora TTN via LMIC and bmp280 code
 // https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
+//// https://github.com/rocketscream/Low-Power
+//// https://github.com/matthijskooijman/arduino-lmic 
 
 /*******************************************************************************
 // https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
