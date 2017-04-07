@@ -207,8 +207,16 @@ void do_send(osjob_t* j) {
   Serial.print(temperature);
   Serial.println(" C");
 
-  // Example Cayenne LPP Payload data is 03 67 01 10 05 67 00 FF  
-  byte buffer[12];
+  // Example Cayenne LPP Payload data is 
+  // 03 67 01 10 
+  // 05 67 00 FF  
+  
+  // Payload in TTN
+  // 03 67 01 10 
+  // 05 67 01 F4 
+  // 04 73 01 F4 
+  
+  byte buffer[8];
   uint8_t cursor = 0;
   #define LPP_TEMPERATURE         0x67     // 103 - 2 bytes, 0.1°C signed
   #define LPP_BAROMETRIC_PRESSURE 0x73     // 115 - 2 bytes 0.1 hPa Unsigned  
@@ -218,10 +226,10 @@ void do_send(osjob_t* j) {
   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
   buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
 
-  buffer[cursor++] = 0x04; // data channel
-  buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
-  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-  buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+  //buffer[cursor++] = 0x04; // data channel
+  //buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
+  //buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+  //buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
   
   buffer[cursor++] = 0x05; // data channel
   buffer[cursor++] = LPP_TEMPERATURE; 
