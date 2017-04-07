@@ -198,9 +198,12 @@ void do_send(osjob_t* j) {
   
   //Print vallue from the sensor BMP Board
   pascal=pascal/100;
+  pascal = (int) pascal * 10;
   Serial.print(" Pressure: ");
   Serial.print(pascal);
   Serial.print(" Pa; T: ");
+  
+  temperature = (int) temperature * 10;
   Serial.print(temperature);
   Serial.println(" C");
 
@@ -209,7 +212,7 @@ void do_send(osjob_t* j) {
   uint8_t cursor = 0;
   #define LPP_TEMPERATURE         0x67     // 103 - 2 bytes, 0.1°C signed
   #define LPP_BAROMETRIC_PRESSURE 0x73     // 115 - 2 bytes 0.1 hPa Unsigned  
-
+  
   buffer[cursor++] = 0x03;  // data channel
   buffer[cursor++] = LPP_TEMPERATURE; 
   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
@@ -224,6 +227,21 @@ void do_send(osjob_t* j) {
   buffer[cursor++] = LPP_TEMPERATURE; 
   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
   buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+
+/* // example code of Cayenne LPP
+  int16_t val;
+  val = pascal;
+  buffer[cursor++] = channel; 
+  buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
+  buffer[cursor++] = val >> 8; 
+  buffer[cursor++] = val; 
+
+  int16_t val = temperature;
+  buffer[cursor++] = channel; 
+  buffer[cursor++] = LPP_TEMPERATURE; 
+  buffer[cursor++] = val >> 8; 
+  buffer[cursor++] = val; 
+*/
    
   // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
