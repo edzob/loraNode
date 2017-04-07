@@ -93,6 +93,8 @@ bool sleeping = false;
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
+//  ‘LSB’ view == little Endian == Least Significant Byte First. 
+
 static const u1_t DEVEUI[8] = { };
 static const u1_t APPEUI[8] = { };
 
