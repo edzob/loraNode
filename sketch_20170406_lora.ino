@@ -41,34 +41,6 @@
  *
  *******************************************************************************/
 
-
-#define LPP_DIGITAL_INPUT       0       // 1 byte
-#define LPP_DIGITAL_OUTPUT      1       // 1 byte
-#define LPP_ANALOG_INPUT        2       // 2 bytes, 0.01 signed
-#define LPP_ANALOG_OUTPUT       3       // 2 bytes, 0.01 signed
-#define LPP_LUMINOSITY          101     // 2 bytes, 1 lux unsigned
-#define LPP_PRESENCE            102     // 1 byte, 1
-#define LPP_TEMPERATURE         103     // 2 bytes, 0.1°C signed
-#define LPP_RELATIVE_HUMIDITY   104     // 1 byte, 0.5% unsigned
-#define LPP_ACCELEROMETER       113     // 2 bytes per axis, 0.001G
-#define LPP_BAROMETRIC_PRESSURE 115     // 2 bytes 0.1 hPa Unsigned
-#define LPP_GYROMETER           134     // 2 bytes per axis, 0.01 °/s
-#define LPP_GPS                 136     // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01m
-
-// Data ID + Data Type + Data Size
-#define LPP_DIGITAL_INPUT_SIZE       3
-#define LPP_DIGITAL_OUTPUT_SIZE      3
-#define LPP_ANALOG_INPUT_SIZE        4
-#define LPP_ANALOG_OUTPUT_SIZE       4
-#define LPP_LUMINOSITY_SIZE          4
-#define LPP_PRESENCE_SIZE            3
-#define LPP_TEMPERATURE_SIZE         4
-#define LPP_RELATIVE_HUMIDITY_SIZE   3
-#define LPP_ACCELEROMETER_SIZE       8
-#define LPP_BAROMETRIC_PRESSURE_SIZE 4
-#define LPP_GYROMETER_SIZE           8
-#define LPP_GPS_SIZE                 11
-
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <lmic.h>
@@ -93,17 +65,14 @@ bool sleeping = false;
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-//  ‘LSB’ view == little Endian == Least Significant Byte First. 
-
-static const u1_t DEVEUI[8] = { };
-static const u1_t APPEUI[8] = { };
+static const u1_t DEVEUI[8] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x12 };
+static const u1_t APPEUI[8] = { 0xCE, 0x42, 0x00, 0xF0, 0x7E, 0xD5, 0xB3, 0x70 };
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
 // The key shown here is the semtech default key.
-// MSB view
-static const u1_t APPKEY[16] = { };
+static const u1_t APPKEY[16] = { 0xA9, 0x7D, 0x21, 0xF7, 0xC9, 0x49, 0x71, 0x61, 0x50, 0x9E, 0xDC, 0xCE, 0xD9, 0xCF, 0x63, 0x32 };
 
 void os_getArtEui (u1_t* buf) {
   memcpy(buf, APPEUI, 8);
@@ -220,11 +189,7 @@ void onEvent (ev_t ev) {
 
 void do_send(osjob_t* j) {
   float temperature,pascal;
-  float hum = 0.0;
-  uint8_t cursor = 0;
-  int16_t help;
-  uint16_t t_value, p_value, s_value;
-
+  
   //Read sensor vallues from BMP Board
   bmp280.awaitMeasurement();
   bmp280.getTemperature(temperature);
@@ -238,53 +203,28 @@ void do_send(osjob_t* j) {
   Serial.print(" Pa; T: ");
   Serial.print(temperature);
   Serial.println(" C");
-  
-  // Example data
-  // 03 67 01 10 05 67 00 FF
 
-  // 03 Data Channel
-  // 67 type = Temperature
-  // 01 10 => 272 => 27.2°C (hex value)
-  // 67 hex = 110 dec
-  
-  // 03 67 01 10 
-  // 05 67 00 FF
-  // #define LPP_TEMPERATURE         103     // 2 bytes, 0.1°C signed
+  // Example Cayenne LPP Payload data is 03 67 01 10 05 67 00 FF  
+  byte buffer[8];
+  uint8_t cursor = 0;
+  #define LPP_TEMPERATURE         0x67     // 103 - 2 bytes, 0.1°C signed
+  #define LPP_BAROMETRIC_PRESSURE 0x73     // 115 - 2 bytes 0.1 hPa Unsigned  
 
-  // the buffer is a collection of decimals, 
-  // where the LPP is written in hex values.
-  
-   byte buffer[8];
-   buffer[cursor++] = 0x03;  // data channel
-   buffer[cursor++] = 0x67; // LPP_TEMPERATURE; // 103 lpp = 0x67 hex
-   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-   buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
-  
-   buffer[cursor++] = 0x05; // data channel
-   buffer[cursor++] = 0x67; // LPP_TEMPERATURE;  // 103 lpp = 0x67 hex
-   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-   buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+  buffer[cursor++] = 0x03;  // data channel
+  buffer[cursor++] = LPP_TEMPERATURE; 
+  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+  buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
 
-    
-  //create Cayenne LPP payload message
-  /*
-  help = temperature * 10;
-  buffer[cursor++] = 0x03;
-  buffer[cursor++] = LPP_TEMPERATURE;
-  buffer[cursor++] = help >> 8;
-  buffer[cursor++] = help;
+  buffer[cursor++] = 0x04; // data channel
+  buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
+  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+  buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
   
-  // buffer[cursor++] = 0x04;
-  // buffer[cursor++] = LPP_RELATIVE_HUMIDITY;
-  // buffer[cursor++] = hum; 
-  
-  help = pascal * 10;
-  buffer[cursor++] = 0x05;
-  buffer[cursor++] = LPP_BAROMETRIC_PRESSURE;
-  buffer[cursor++] = help >> 8;
-  buffer[cursor++] = help;
-  */
-  
+  buffer[cursor++] = 0x05; // data channel
+  buffer[cursor++] = LPP_TEMPERATURE; 
+  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
+  buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+   
   // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
     Serial.println(F("OP_TXRXPEND, not sending"));
@@ -299,6 +239,7 @@ void do_send(osjob_t* j) {
    }
    Serial.println(" Done, on to the next measurement");
   }
+  
 }//do_send()
 
 // initial job
