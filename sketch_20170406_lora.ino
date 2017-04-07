@@ -206,15 +206,14 @@ void do_send(osjob_t* j) {
   temperature = (int) temperature * 10;
   Serial.print(temperature);
   Serial.println(" C");
-
+/*
   // Example Cayenne LPP Payload data is 
   // 03 67 01 10 
   // 05 67 00 FF  
   
   // Payload in TTN
   // 03 67 01 10 
-  // 05 67 01 F4 
-  // 04 73 01 F4 
+  // 05 67 01 F4
   
   byte buffer[8];
   uint8_t cursor = 0;
@@ -225,28 +224,30 @@ void do_send(osjob_t* j) {
   buffer[cursor++] = LPP_TEMPERATURE; 
   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
   buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
-
-  //buffer[cursor++] = 0x04; // data channel
-  //buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
-  //buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-  //buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
   
   buffer[cursor++] = 0x05; // data channel
   buffer[cursor++] = LPP_TEMPERATURE; 
   buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
   buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
+*/
 
-/* // example code of Cayenne LPP
+  // example code of Cayenne LPP
   #define LPP_TEMPERATURE         103     //  0x67 - 103 - 2 bytes, 0.1°C signed
   #define LPP_BAROMETRIC_PRESSURE 115     // 0x73 - 115 - 2 bytes 0.1 hPa Unsigned 
 
   int16_t val;
-  uint8_t channel
+  uint8_t channel;
   byte buffer[8];
-  uint8_t cursor;
+  uint8_t cursor = 0;
 
-  buffer = (uint8_t*) malloc(size);
-  cursor = 0;
+  // 04 73 28 1E
+  // channel 04
+  // 73 = type= 115 
+  // 28 1e = 10270
+  // 05 67 00 BE
+  // channel 05
+  // 67 = type = 103
+  // 00 BE = 190
   
   val = pascal;
   channel = 0x04;
@@ -260,8 +261,7 @@ void do_send(osjob_t* j) {
   buffer[cursor++] = channel; 
   buffer[cursor++] = LPP_TEMPERATURE; 
   buffer[cursor++] = val >> 8; 
-  buffer[cursor++] = val; 
-*/
+  buffer[cursor++] = val;   
    
   // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
