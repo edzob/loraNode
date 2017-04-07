@@ -1,11 +1,43 @@
 // Cayenne LPP Byte definition
-//https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md
+// https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md
 
 // Cayenne LPP Payload buildup
 // https://hansboksem.wordpress.com/2017/03/06/sending-sensor-data-through-the-things-network-to-cayenne/
 
 // Lora TTN via LMIC and bmp280 code
 // https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
+
+/*******************************************************************************
+// https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
+ * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
+ *
+ * Permission is hereby granted, free of charge, to anyone
+ * obtaining a copy of this document and accompanying files,
+ * to do whatever they want with them without any restriction,
+ * including, but not limited to, copying, modification and redistribution.
+ * NO WARRANTY OF ANY KIND IS PROVIDED.
+ *
+ * This example will send Temperature and Air Pressure
+ * using frequency and encryption settings matching those of
+ * the The Things Network. Application will 'sleep' 7x8 seconds (56 seconds)
+ *
+ * This uses ABP (Activation-by-personalisation), where a DevAddr and
+ * Session keys are preconfigured (unlike OTAA, where a DevEUI and
+ * application key is configured, while the DevAddr and session keys are
+ * assigned/generated in the over-the-air-activation procedure).
+ *
+ *
+ * Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in
+ * g1, 0.1% in g2), but not the TTN fair usage policy (which is probably
+ * violated by this sketch when left running for longer)!
+ * To use this sketch, first register your application and device with
+ * the things network, to set or generate an AppEUI, DevEUI and AppKey.
+ * Multiple devices can use the same AppEUI, but each device has its own
+ * DevEUI and AppKey.
+ *
+ * Do not forget to define the radio type correctly in config.h.
+ *
+ *******************************************************************************/
 
 
 #define LPP_DIGITAL_INPUT       0       // 1 byte
