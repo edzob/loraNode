@@ -3,6 +3,7 @@
 
 // Cayenne LPP Payload buildup
 // https://hansboksem.wordpress.com/2017/03/06/sending-sensor-data-through-the-things-network-to-cayenne/
+// https://github.com/bokse001
 
 // Lora TTN via LMIC and bmp280 code
 // https://github.com/galagaking/ttn_nodeworkshop/blob/master/ttn_bmp280_abp.ino
@@ -206,56 +207,25 @@ void do_send(osjob_t* j) {
   temperature = (int) temperature * 10;
   Serial.print(temperature);
   Serial.println(" C");
-/*
-  // Example Cayenne LPP Payload data is 
-  // 03 67 01 10 
-  // 05 67 00 FF  
-  
-  // Payload in TTN
-  // 03 67 01 10 
-  // 05 67 01 F4
-  
-  byte buffer[8];
-  uint8_t cursor = 0;
-  #define LPP_TEMPERATURE         0x67     // 103 - 2 bytes, 0.1°C signed
-  #define LPP_BAROMETRIC_PRESSURE 0x73     // 115 - 2 bytes 0.1 hPa Unsigned  
-  
-  buffer[cursor++] = 0x03;  // data channel
-  buffer[cursor++] = LPP_TEMPERATURE; 
-  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-  buffer[cursor++] = 0x10; // TEMPERATURE 27.2°C = 01 10
-  
-  buffer[cursor++] = 0x05; // data channel
-  buffer[cursor++] = LPP_TEMPERATURE; 
-  buffer[cursor++] = 0x01; // TEMPERATURE 27.2°C = 01 10
-  buffer[cursor++] = 0xF4; // TEMPERATURE 27.2°C = 01 10
-*/
 
-  // example code of Cayenne LPP
+
+  // Cayenne LPP Protocal Definition
   #define LPP_TEMPERATURE         103     //  0x67 - 103 - 2 bytes, 0.1°C signed
   #define LPP_BAROMETRIC_PRESSURE 115     // 0x73 - 115 - 2 bytes 0.1 hPa Unsigned 
-
+  // Init declaration
   int16_t val;
   uint8_t channel;
   byte buffer[8];
   uint8_t cursor = 0;
 
-  // 04 73 28 1E
-  // channel 04
-  // 73 = type= 115 
-  // 28 1e = 10270
-  // 05 67 00 BE
-  // channel 05
-  // 67 = type = 103
-  // 00 BE = 190
-  
+  // set Sensor Barometric Pressure into payload
   val = pascal;
   channel = 0x04;
   buffer[cursor++] = channel; 
   buffer[cursor++] = LPP_BAROMETRIC_PRESSURE; 
   buffer[cursor++] = val >> 8; 
   buffer[cursor++] = val; 
-
+  // set Sensor Temperature into payload
   val = temperature;
   channel = 0x05;
   buffer[cursor++] = channel; 
